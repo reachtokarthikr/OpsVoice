@@ -99,3 +99,4 @@ Everything is Infrastructure-as-Code:
 - **Source code**: [github.com/reachtokarthikr/OpsVoice](https://github.com/reachtokarthikr/OpsVoice)
 - **Interactive architecture**: [Architecture Diagram](https://opsvoice-942622207688.us-central1.run.app/static/architecture.html)
 - **Demo video**: [Watch on YouTube](https://youtu.be/w8ci6UETBpo)
+- **Blog post**: [Read on Medium](https://medium.com/@reachtokarthikr/how-i-built-opsvoice-for-the-gemini-live-agent-challenge-f118cacb23a8)

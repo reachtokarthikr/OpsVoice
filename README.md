@@ -196,7 +196,7 @@ See [docs/SECURITY.md](docs/SECURITY.md) for the full security practices documen
 | [Setup Guide](docs/SETUP_GUIDE.md) | Local development to Cloud Run deployment |
 | [Security](docs/SECURITY.md) | Security practices and checklist |
 | [Contributing](docs/CONTRIBUTING.md) | Development standards and pull request checklist |
-| [Blog Post](docs/BLOG_POST.md) | How I built OpsVoice |
+| [Blog Post](https://medium.com/@reachtokarthikr/how-i-built-opsvoice-for-the-gemini-live-agent-challenge-f118cacb23a8) | How I built OpsVoice |
 
 ## What I Learned
 
