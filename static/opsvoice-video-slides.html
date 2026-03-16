@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpsVoice Demo Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --accent: #4f8cff; --accent2: #7c5cfc;
+    --green: #34d399; --red: #f87171; --orange: #fb923c; --text: #e8e8f0; --muted: #8888aa;
+    --border: #1a2234; --teal: #22d3ee;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; width: 100vw; height: 100vh; }
+  .slide {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0.95); transition: opacity 0.8s ease, transform 0.8s ease; pointer-events: none; padding: 60px;
+  }
+  .slide.active { opacity: 1; transform: scale(1); pointer-events: all; }
+
+  /* HOOK */
+  .slide-hook { background: radial-gradient(ellipse at center, #1a0a0a 0%, #0a0a0f 70%); }
+  .hook-time { font-family: 'JetBrains Mono', monospace; font-size: 120px; font-weight: 700; color: var(--red); text-shadow: 0 0 60px rgba(248,113,113,0.4); margin-bottom: 20px; animation: flicker 3s ease-in-out infinite; }
+  @keyframes flicker { 0%,100%{opacity:1;} 50%{opacity:0.7;} }
+  .terminal { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px 24px; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.8; max-width: 700px; width: 100%; margin-bottom: 30px; text-align: left; }
+  .terminal-header { display: flex; gap: 8px; margin-bottom: 16px; }
+  .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .t-red{background:#ff5f56;} .t-yel{background:#ffbd2e;} .t-grn{background:#27c93f;}
+  .term-line { opacity: 0; animation: typeIn 0.3s ease forwards; }
+  .term-line:nth-child(2){animation-delay:0.5s;} .term-line:nth-child(3){animation-delay:1s;} .term-line:nth-child(4){animation-delay:1.5s;} .term-line:nth-child(5){animation-delay:2s;}
+  @keyframes typeIn { from{opacity:0;transform:translateX(-10px);} to{opacity:1;transform:translateX(0);} }
+  .t-err{color:var(--red);} .t-warn{color:var(--orange);} .t-info{color:var(--muted);} .t-prompt{color:var(--green);}
+  .hook-question { font-size: 36px; color: var(--accent); font-weight: 600; opacity: 0; animation: fadeUp 1s ease 2.5s forwards; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+  /* INTRO */
+  .slide-intro { background: radial-gradient(ellipse at 30% 50%, #0a1628 0%, #0a0a0f 70%); }
+  .brand-container { display: flex; align-items: center; gap: 24px; margin-bottom: 16px; }
+  .brand-logo { width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 8px 32px rgba(79,140,255,0.3); }
+  .brand-name { font-size: 72px; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .brand-tagline { font-size: 28px; color: var(--muted); font-weight: 300; margin-bottom: 50px; font-style: italic; }
+  .features-row { display: flex; gap: 30px; margin-top: 20px; }
+  .feature-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 28px; width: 280px; text-align: center; opacity: 0; animation: cardIn 0.6s ease forwards; }
+  .feature-card:nth-child(1){animation-delay:0.3s;} .feature-card:nth-child(2){animation-delay:0.6s;} .feature-card:nth-child(3){animation-delay:0.9s;}
+  @keyframes cardIn { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+  .feature-icon{font-size:40px;margin-bottom:12px;} .feature-label{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:8px;font-weight:600;} .feature-title{font-size:18px;font-weight:600;margin-bottom:8px;} .feature-desc{font-size:14px;color:var(--muted);line-height:1.5;}
+  .powered-by { margin-top: 40px; display: flex; align-items: center; gap: 16px; font-size: 16px; color: var(--muted); }
+  .tech-badge { background: rgba(79,140,255,0.1); border: 1px solid rgba(79,140,255,0.2); border-radius: 8px; padding: 6px 14px; font-size: 14px; font-weight: 600; color: var(--accent); }
+
+  /* LIVE DEMO PLACEHOLDER */
+  .slide-demo { background: radial-gradient(ellipse at center, #0f1a0f 0%, #0a0a0f 70%); }
+  .demo-badge { background: var(--red); color: white; font-size: 14px; font-weight: 700; padding: 6px 18px; border-radius: 20px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.9;} 50%{transform:scale(1.05);opacity:1;} }
+  .demo-title { font-size: 48px; font-weight: 700; margin-bottom: 10px; }
+  .demo-subtitle { font-size: 20px; color: var(--muted); }
+
+  /* ARCHITECTURE (animated diagram) */
+  .slide-arch { background: var(--bg); padding: 24px 40px; overflow-y: auto; align-items: center; justify-content: flex-start; }
+  .slide-arch .arch-inner { width: 100%; max-width: 960px; margin: 0 auto; }
+  .slide-arch .title-section { text-align: center; margin-bottom: 20px; }
+  .slide-arch .title-brand { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .slide-arch .title-sub { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .slide-arch .title-desc { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .slide-arch .section-label { font-size: 10px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .slide-arch .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .slide-arch .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; transition: border-color 0.3s, box-shadow 0.3s; }
+  .slide-arch .card:hover { border-color: rgba(79,140,255,0.4); box-shadow: 0 4px 24px rgba(79,140,255,0.1); }
+  .slide-arch .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 6px; }
+  .slide-arch .card-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .slide-arch .card-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
+  .slide-arch .card-badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
+  .slide-arch .card.user { border-color: #2563eb; }
+  .slide-arch .card.user .card-icon { background: rgba(37,99,235,0.15); color: #60a5fa; }
+  .slide-arch .card.user .card-badge { background: rgba(37,99,235,0.2); color: #60a5fa; }
+  .slide-arch .card.frontend { border-color: var(--teal); }
+  .slide-arch .card.frontend .card-icon { background: rgba(34,211,238,0.1); color: var(--teal); }
+  .slide-arch .card.frontend .card-badge { background: rgba(34,211,238,0.15); color: var(--teal); }
+  .slide-arch .card.backend { border-color: var(--accent2); }
+  .slide-arch .card.backend .card-icon { background: rgba(124,92,252,0.12); color: #a78bfa; }
+  .slide-arch .card.backend .card-badge { background: rgba(124,92,252,0.2); color: #a78bfa; }
+  .slide-arch .card.ai { border-color: var(--green); background: linear-gradient(135deg, rgba(52,211,153,0.06), rgba(34,211,238,0.04)); }
+  .slide-arch .card.ai .card-icon { background: rgba(52,211,153,0.12); color: var(--green); }
+  .slide-arch .card.ai .card-badge { background: rgba(52,211,153,0.2); color: var(--green); }
+  .slide-arch .card.tool { border-color: var(--red); }
+  .slide-arch .card.tool .card-icon { background: rgba(248,113,113,0.12); color: var(--red); }
+  .slide-arch .card.tool:hover { border-color: var(--red); box-shadow: 0 0 18px rgba(248,113,113,0.25); }
+  .slide-arch .card.cloud { border-color: var(--green); }
+  .slide-arch .card.cloud .card-icon { background: rgba(52,211,153,0.1); color: var(--green); }
+  .slide-arch .card.cloud:hover { border-color: var(--green); box-shadow: 0 0 18px rgba(52,211,153,0.25); }
+  .slide-arch .grid-1 { display: grid; grid-template-columns: 1fr; justify-items: center; }
+  .slide-arch .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .slide-arch .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .slide-arch .grid-2x3 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); gap: 8px; }
+  .slide-arch .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .slide-arch .connector { display: flex; align-items: center; justify-content: center; padding: 8px 0; position: relative; opacity: 0; }
+  .slide-arch .connector-line { width: 2px; height: 22px; background: repeating-linear-gradient(180deg, var(--accent) 0, var(--accent) 4px, transparent 4px, transparent 8px); animation: archFlowDown 0.8s linear infinite; }
+  .slide-arch .conn-purple .connector-line { background: repeating-linear-gradient(180deg, var(--accent2) 0, var(--accent2) 4px, transparent 4px, transparent 8px); }
+  @keyframes archFlowDown { 0% { background-position: 0 -20px; } 100% { background-position: 0 20px; } }
+  .slide-arch .connector-label { font-size: 10px; font-weight: 600; color: var(--accent); background: var(--bg); padding: 2px 10px; position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; }
+  .slide-arch .conn-purple .connector-label { color: var(--accent2); }
+  .slide-arch .connector-label .arrow { animation: archBlink 1.5s ease-in-out infinite; }
+  @keyframes archBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .slide-arch .particle { width: 5px; height: 5px; border-radius: 50%; position: absolute; animation: archParticleUp 1.5s ease-in-out infinite; }
+  .slide-arch .particle.p1 { background: var(--accent); left: calc(50% - 10px); animation-delay: 0s; }
+  .slide-arch .particle.p2 { background: var(--teal); left: calc(50% + 4px); animation-delay: 0.5s; }
+  @keyframes archParticleUp { 0% { opacity: 0; transform: translateY(8px) scale(0.5); } 40% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-12px) scale(0.5); } }
+  .slide-arch .flow-section { margin-top: 20px; }
+  .slide-arch .flow-title { text-align: center; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .slide-arch .flow-title span { background: linear-gradient(135deg, var(--red), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .slide-arch .flow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .slide-arch .flow-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .slide-arch .flow-num { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .slide-arch .flow-card-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .slide-arch .flow-card-path { font-size: 9px; color: var(--muted); line-height: 1.5; }
+  .slide-arch .flow-card-path span { color: var(--text); font-weight: 500; }
+  .slide-arch .flow-card.f1 { border-left: 3px solid var(--green); }
+  .slide-arch .flow-card.f2 { border-left: 3px solid var(--orange); }
+  .slide-arch .flow-card.f3 { border-left: 3px solid var(--accent2); }
+  .slide-arch .flow-card.f4 { border-left: 3px solid var(--red); }
+  .slide-arch .legend { display: flex; justify-content: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+  .slide-arch .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--muted); }
+  .slide-arch .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .slide-arch .layer { opacity: 0; }
+  .slide-arch .layer.reveal { animation: archFadeInUp 0.6s ease both; }
+  @keyframes archFadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .slide-arch .card { opacity: 0; }
+  .slide-arch .card.reveal { opacity: 1; transform: scale(1); }
+  .slide-arch .card.ai::before { content: ''; position: absolute; inset: -1px; border-radius: 10px; background: linear-gradient(90deg, var(--green), var(--teal), var(--green)); background-size: 200% 100%; animation: archBorderShift 3s linear infinite; z-index: -1; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude; -webkit-mask-composite: xor; padding: 1.5px; }
+  @keyframes archBorderShift { 0% { background-position: 0 0; } 100% { background-position: 200% 0; } }
+
+  /* TECH */
+  .slide-tech { background: radial-gradient(ellipse at 50% 70%, #0f0f1a 0%, #0a0a0f 70%); }
+  .tech-title { font-size: 36px; font-weight: 700; margin-bottom: 40px; }
+  .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; }
+  .tech-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; text-align: center; opacity: 0; animation: techIn 0.4s ease forwards; }
+  .tech-item:nth-child(1){animation-delay:0.1s;} .tech-item:nth-child(2){animation-delay:0.2s;} .tech-item:nth-child(3){animation-delay:0.3s;} .tech-item:nth-child(4){animation-delay:0.4s;} .tech-item:nth-child(5){animation-delay:0.5s;} .tech-item:nth-child(6){animation-delay:0.6s;}
+  @keyframes techIn { from{opacity:0;transform:scale(0.9);} to{opacity:1;transform:scale(1);} }
+  .tech-item-icon{font-size:32px;margin-bottom:8px;} .tech-item-name{font-size:16px;font-weight:600;margin-bottom:4px;} .tech-item-detail{font-size:12px;color:var(--muted);}
+
+  /* CLOSE */
+  .slide-close { background: radial-gradient(ellipse at center, #0a1628 0%, #0a0a0f 70%); }
+  .close-quote { font-size: 30px; font-weight: 300; text-align: center; max-width: 800px; line-height: 1.6; color: #ccc; margin-bottom: 50px; font-style: italic; }
+  .close-brand { font-size: 56px; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 30px; }
+  .close-links { display: flex; gap: 24px; margin-top: 20px; }
+  .close-link { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px 28px; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .close-thankyou { margin-top: 40px; font-size: 20px; color: var(--muted); font-weight: 300; }
+
+  /* NAV */
+  .nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 100; }
+  .nav-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.3s ease; }
+  .nav-dot.active { background: var(--accent); box-shadow: 0 0 12px rgba(79,140,255,0.5); transform: scale(1.3); }
+  .nav-hint { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--muted); opacity: 0.5; }
+  .slide-number { position: fixed; top: 20px; right: 30px; font-size: 14px; color: var(--muted); font-family: 'JetBrains Mono', monospace; z-index: 100; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: HOOK -->
+<div class="slide slide-hook active" id="slide-0">
+  <div class="hook-time">3:00 AM</div>
+  <div class="terminal">
+    <div class="terminal-header">
+      <div class="terminal-dot t-red"></div>
+      <div class="terminal-dot t-yel"></div>
+      <div class="terminal-dot t-grn"></div>
+    </div>
+    <div class="term-line t-prompt">$ kubectl get pods</div>
+    <div class="term-line t-err">ERROR: connection refused - port 5432</div>
+    <div class="term-line t-warn">CRITICAL: api-server CrashLoopBackOff</div>
+    <div class="term-line t-err">FATAL: OOM Kill - container exceeded 512Mi</div>
+    <div class="term-line t-info">Your senior DevOps engineer is not answering...</div>
+  </div>
+  <div class="hook-question">What if you had one that never sleeps?</div>
+</div>
+
+<!-- SLIDE 2: INTRO -->
+<div class="slide slide-intro" id="slide-1">
+  <div class="brand-container">
+    <div class="brand-logo">&#x1F527;</div>
+    <div class="brand-name">OpsVoice</div>
+  </div>
+  <div class="brand-tagline">"Voice-First SRE Copilot powered by Gemini Live + Google ADK"</div>
+  <div class="features-row">
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F3A4;</div>
+      <div class="feature-label">VOICE + VISION</div>
+      <div class="feature-title">Real-Time Streaming</div>
+      <div class="feature-desc">Talk naturally while sharing your camera - OpsVoice sees errors, hears you, and responds instantly with native audio</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F6A8;</div>
+      <div class="feature-label">INCIDENT MGMT</div>
+      <div class="feature-title">Create, Track, Resolve</div>
+      <div class="feature-desc">Full incident lifecycle - create incidents, check open issues, update status, and retrieve runbooks hands-free</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x26A1;</div>
+      <div class="feature-label">PROACTIVE</div>
+      <div class="feature-title">Alert Monitor</div>
+      <div class="feature-desc">Background service health polling with proactive WebSocket alerts - OpsVoice warns you before things break</div>
+    </div>
+  </div>
+  <div class="powered-by">
+    <span>Powered by</span>
+    <span class="tech-badge">Gemini 2.5 Flash</span>
+    <span class="tech-badge">Live API</span>
+    <span class="tech-badge">Google ADK</span>
+    <span class="tech-badge">Cloud Run</span>
+  </div>
+</div>
+
+<!-- SLIDE 3: LIVE DEMO (placeholder - switch to app recording here) -->
+<div class="slide slide-demo" id="slide-2">
+  <div class="demo-badge">&#x1F534; LIVE DEMO</div>
+  <div class="demo-title">Watch OpsVoice in Action</div>
+  <div class="demo-subtitle">Switch to your app screen recording here</div>
+</div>
+
+<!-- SLIDE 4: ARCHITECTURE (animated diagram) -->
+<div class="slide slide-arch" id="slide-3">
+  <div class="arch-inner">
+  <div class="title-section">
+    <div class="title-brand">OpsVoice</div>
+    <div class="title-sub">System Architecture</div>
+    <div class="title-desc">Voice-First SRE Copilot powered by Gemini Live + Google ADK</div>
+  </div>
+  <div class="layer" id="layer-user">
+    <div class="section-label">User Layer</div>
+    <div class="grid-1">
+      <div class="card user" style="max-width:420px;width:100%;">
+        <div class="card-icon">&#x1F5A5;</div>
+        <div class="card-title">Browser</div>
+        <div class="card-desc">SRE operator interface with real-time voice, text, and camera inputs</div>
+        <div class="card-badge">VOICE + TEXT + CAMERA</div>
+      </div>
+    </div>
+  </div>
+  <div class="connector" id="conn1">
+    <div style="display:flex;gap:40px;align-items:flex-end;">
+      <span style="font-size:10px;color:var(--muted);">SEND</span>
+      <div class="connector-line" style="height:20px;"></div>
+      <span style="font-size:10px;color:var(--muted);">RECEIVE</span>
+    </div>
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+  </div>
+  <div class="layer" id="layer-frontend">
+    <div class="section-label">Frontend (In-Browser)</div>
+    <div class="grid-3">
+      <div class="card frontend">
+        <div class="card-icon">&#x27A1;&#xFE0F;</div>
+        <div class="card-title">WebSocket Connection</div>
+        <div class="card-desc">Full-duplex bidirectional streaming between browser and server</div>
+        <div class="card-badge">BIDIRECTIONAL</div>
+      </div>
+      <div class="card frontend">
+        <div class="card-icon">&#x1F399;&#xFE0F;</div>
+        <div class="card-title">Audio Processing</div>
+        <div class="card-desc">Real-time PCM capture at 16kHz mono, base64 encoded for streaming</div>
+        <div class="card-badge">PCM 16KHZ</div>
+      </div>
+      <div class="card frontend">
+        <div class="card-icon">&#x1F4F7;</div>
+        <div class="card-title">Camera Frame Capture</div>
+        <div class="card-desc">Periodic frame capture from device camera, JPEG compressed</div>
+        <div class="card-badge">JPEG FRAMES</div>
+      </div>
+    </div>
+  </div>
+  <div class="connector" id="conn2">
+    <div class="connector-label"><span class="arrow">&#x2B07;&#xFE0F;</span> WEBSOCKET / WSS <span class="arrow">&#x2B06;&#xFE0F;</span></div>
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+  </div>
+  <div class="layer" id="layer-backend">
+    <div class="section-label">Backend (Google Cloud Run)</div>
+    <div class="grid-4">
+      <div class="card backend">
+        <div class="card-icon">&lt;/&gt;</div>
+        <div class="card-title">FastAPI Server</div>
+        <div class="card-desc">Async Python server handling WebSocket upgrades and HTTP endpoints</div>
+        <div class="card-badge">PYTHON / ASYNC</div>
+      </div>
+      <div class="card backend">
+        <div class="card-icon">&#x2699;&#xFE0F;</div>
+        <div class="card-title">Google ADK Runner</div>
+        <div class="card-desc">Agent Development Kit orchestrating tool calls and Gemini sessions</div>
+        <div class="card-badge">ADK FRAMEWORK</div>
+      </div>
+      <div class="card backend">
+        <div class="card-icon">&#x1F464;</div>
+        <div class="card-title">Session Management</div>
+        <div class="card-desc">Per-user session state, conversation history, and context tracking</div>
+        <div class="card-badge">STATEFUL</div>
+      </div>
+      <div class="card backend">
+        <div class="card-icon">&#x26A0;&#xFE0F;</div>
+        <div class="card-title">Proactive Alert Monitor</div>
+        <div class="card-desc">Background task polling service health, broadcasts alerts via WebSocket</div>
+        <div class="card-badge">ASYNC BROADCAST</div>
+      </div>
+    </div>
+  </div>
+  <div class="connector conn-purple" id="conn3">
+    <div class="connector-label"><span class="arrow">&#x2B07;&#xFE0F;</span> GEMINI LIVE API <span class="arrow">&#x2B06;&#xFE0F;</span></div>
+    <div class="particle p1" style="background:var(--accent2);"></div>
+    <div class="particle p2" style="background:#a78bfa;"></div>
+  </div>
+  <div class="layer" id="layer-ai">
+    <div class="section-label">AI Layer</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="card ai">
+        <div class="card-icon">&#x2728;</div>
+        <div class="card-title">Gemini 2.5 Flash</div>
+        <div class="card-desc">Multimodal AI with native audio understanding and generation capabilities</div>
+        <div class="card-badge">NATIVE AUDIO</div>
+      </div>
+      <div class="card ai">
+        <div class="card-icon">&#x26A1;</div>
+        <div class="card-title">Live Bidirectional Streaming</div>
+        <div class="card-desc">Real-time audio-in, audio-out with interruptible conversation flow</div>
+        <div class="card-badge">REAL-TIME</div>
+      </div>
+    </div>
+  </div>
+  <div class="connector" id="conn4" style="padding:6px 0;">
+    <div style="display:flex;width:100%;justify-content:space-around;align-items:flex-start;">
+      <div class="connector-label" style="color:var(--orange);font-size:10px;"><span class="arrow">&#x2B07;&#xFE0F;</span> TOOL CALLS</div>
+      <div class="connector-label" style="color:var(--green);font-size:10px;"><span class="arrow">&#x2B07;&#xFE0F;</span> INFRASTRUCTURE</div>
+    </div>
+  </div>
+  <div class="layer" id="layer-tools">
+    <div class="two-col">
+      <div>
+        <div class="section-label" style="color:var(--red);">Agent Tools</div>
+        <div class="grid-2x3" style="grid-template-columns:1fr 1fr;">
+          <div class="card tool">
+            <div class="card-icon">&#x2694;&#xFE0F;</div>
+            <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:11px;">check_service_health</div>
+            <div class="card-desc">Poll status of monitored services</div>
+          </div>
+          <div class="card tool">
+            <div class="card-icon">&#x1F4DD;</div>
+            <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:11px;">create_incident</div>
+            <div class="card-desc">Open new incident records in Firestore</div>
+          </div>
+          <div class="card tool">
+            <div class="card-icon">&#x1F4CB;</div>
+            <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:11px;">get_open_incidents</div>
+            <div class="card-desc">List active incident records</div>
+          </div>
+          <div class="card tool">
+            <div class="card-icon">&#x2705;</div>
+            <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:11px;">update_incident_status</div>
+            <div class="card-desc">Resolve or escalate incidents</div>
+          </div>
+          <div class="card tool">
+            <div class="card-icon">&#x1F4D6;</div>
+            <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:11px;">get_runbook</div>
+            <div class="card-desc">Retrieve remediation playbooks</div>
+          </div>
+          <div class="card tool">
+            <div class="card-icon">&#x1F50D;</div>
+            <div class="card-title" style="font-family:'JetBrains Mono',monospace;font-size:11px;">google_search</div>
+            <div class="card-desc">Web search for troubleshooting context</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="color:var(--green);">Google Cloud Services</div>
+        <div class="grid-2x3" style="grid-template-columns:1fr 1fr;">
+          <div class="card cloud">
+            <div class="card-icon">&#x2601;&#xFE0F;</div>
+            <div class="card-title">Cloud Run</div>
+            <div class="card-desc">Serverless container hosting</div>
+          </div>
+          <div class="card cloud">
+            <div class="card-icon">&#x1F4BE;</div>
+            <div class="card-title">Firestore</div>
+            <div class="card-desc">Incidents database (NoSQL)</div>
+          </div>
+          <div class="card cloud">
+            <div class="card-icon">&#x1F510;</div>
+            <div class="card-title">Secret Manager</div>
+            <div class="card-desc">Secure API key storage</div>
+          </div>
+          <div class="card cloud">
+            <div class="card-icon">&#x1F4E6;</div>
+            <div class="card-title">Artifact Registry</div>
+            <div class="card-desc">Container image repository</div>
+          </div>
+          <div class="card cloud">
+            <div class="card-icon">&lt;/&gt;</div>
+            <div class="card-title">Cloud Build</div>
+            <div class="card-desc">CI/CD pipeline</div>
+          </div>
+          <div class="card cloud">
+            <div class="card-icon">&#x1F4CA;</div>
+            <div class="card-title">Cloud Logging</div>
+            <div class="card-desc">Centralized log aggregation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flow-section layer" id="layer-flow">
+    <div class="flow-title"><span>Data</span> Flow Paths</div>
+    <div class="flow-grid">
+      <div class="flow-card f1">
+        <div class="flow-num" style="background:var(--green);">1</div>
+        <div class="flow-card-title">Voice/Text Request</div>
+        <div class="flow-card-path"><span>Browser</span> &rarr; <span>WebSocket</span> &rarr; <span>FastAPI</span> &rarr; <span>ADK Runner</span> &rarr; <span>Gemini Live API</span></div>
+      </div>
+      <div class="flow-card f2">
+        <div class="flow-num" style="background:var(--orange);">2</div>
+        <div class="flow-card-title">Tool Execution</div>
+        <div class="flow-card-path"><span>Gemini Live API</span> &rarr; <span>Tool Calls</span> &rarr; <span>Service Health</span> / <span>Firestore</span></div>
+      </div>
+      <div class="flow-card f3">
+        <div class="flow-num" style="background:var(--accent2);">3</div>
+        <div class="flow-card-title">AI Response</div>
+        <div class="flow-card-path"><span>Gemini Live API</span> &rarr; <span>Audio/Text</span> &rarr; <span>WebSocket</span> &rarr; <span>Browser</span></div>
+      </div>
+      <div class="flow-card f4">
+        <div class="flow-num" style="background:var(--red);">4</div>
+        <div class="flow-card-title">Proactive Alerts</div>
+        <div class="flow-card-path"><span>Alert Monitor</span> &rarr; <span>WS Broadcast</span> &rarr; <span>All Browsers</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="legend layer" id="layer-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>User</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--teal);"></div>Frontend</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent2);"></div>Backend</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>AI</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div>Tools</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>Cloud</div>
+  </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: TECH HIGHLIGHTS -->
+<div class="slide slide-tech" id="slide-4">
+  <div class="tech-title">Technical Highlights</div>
+  <div class="tech-grid">
+    <div class="tech-item"><div class="tech-item-icon">&#x2728;</div><div class="tech-item-name">Gemini Native Audio</div><div class="tech-item-detail">gemini-2.5-flash-native-audio-preview with Live API</div></div>
+    <div class="tech-item"><div class="tech-item-icon">&#x1F916;</div><div class="tech-item-name">Google ADK</div><div class="tech-item-detail">Runner.run_live() + LiveRequestQueue</div></div>
+    <div class="tech-item"><div class="tech-item-icon">&#x1F3A4;</div><div class="tech-item-name">Voice + Camera + Text</div><div class="tech-item-detail">PCM 16kHz audio + JPEG frames, all via WebSocket</div></div>
+    <div class="tech-item"><div class="tech-item-icon">&#x1F6A8;</div><div class="tech-item-name">6 Agent Tools</div><div class="tech-item-detail">Incident CRUD, health checks, runbooks, grounded search</div></div>
+    <div class="tech-item"><div class="tech-item-icon">&#x26A1;</div><div class="tech-item-name">Proactive Alerts</div><div class="tech-item-detail">Background health polling with async WebSocket broadcast</div></div>
+    <div class="tech-item"><div class="tech-item-icon">&#x2601;&#xFE0F;</div><div class="tech-item-name">Cloud Native</div><div class="tech-item-detail">Cloud Run + Firestore + Secret Manager + Terraform</div></div>
+  </div>
+</div>
+
+<!-- SLIDE 6: CLOSE -->
+<div class="slide slide-close" id="slide-5">
+  <div class="close-quote">"AI interaction does not need a text box.<br>By combining real-time voice with computer vision,<br>we created an experience that feels like having a<br>senior engineer right beside you."</div>
+  <div class="close-brand">OpsVoice</div>
+  <div class="close-links">
+    <div class="close-link"><span>&#x1F4BB;</span><span>Open Source on GitHub</span></div>
+    <div class="close-link"><span>&#x2601;&#xFE0F;</span><span>Live on Google Cloud</span></div>
+    <div class="close-link"><span>&#x1F4DD;</span><span>Blog Post on Dev.to</span></div>
+  </div>
+  <div class="close-thankyou">Thank you for watching</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-dot active" onclick="goTo(0)"></div>
+  <div class="nav-dot" onclick="goTo(1)"></div>
+  <div class="nav-dot" onclick="goTo(2)"></div>
+  <div class="nav-dot" onclick="goTo(3)"></div>
+  <div class="nav-dot" onclick="goTo(4)"></div>
+  <div class="nav-dot" onclick="goTo(5)"></div>
+</div>
+<div class="nav-hint">Arrow keys or click dots to navigate | F = fullscreen</div>
+<div class="slide-number" id="slideNum">1 / 6</div>
+
+<script>
+  let current = 0;
+  const total = 6;
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-dot').forEach(d => d.classList.remove('active'));
+    document.getElementById('slide-' + n).classList.add('active');
+    document.querySelectorAll('.nav-dot')[n].classList.add('active');
+    document.getElementById('slideNum').textContent = (n + 1) + ' / ' + total;
+    current = n;
+    if (n === 3) revealArchSlide();
+  }
+  function revealArchSlide() {
+    const slide = document.getElementById('slide-3');
+    if (!slide) return;
+    slide.querySelectorAll('.layer').forEach((layer, i) => {
+      layer.classList.add('reveal');
+      layer.querySelectorAll('.card, .flow-card').forEach((card, j) => {
+        setTimeout(() => card.classList.add('reveal'), j * 100);
+      });
+    });
+    slide.querySelectorAll('.connector').forEach((conn, i) => {
+      conn.style.opacity = '1';
+      conn.style.animation = 'archFadeInUp 0.4s ease ' + (0.2 + i * 0.2) + 's both';
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') goTo(current + 1);
+    if (e.key === 'ArrowLeft') goTo(current - 1);
+    if (e.key === 'f') document.documentElement.requestFullscreen();
+  });
+</script>
+</body>
+</html>

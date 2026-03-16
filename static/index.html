@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ws: wss:; worker-src 'self' blob:;">
+  <title>OpsVoice — SRE Command Center</title>
+  <meta name="description" content="Voice-first SRE incident response agent powered by Gemini Live.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2300d4aa'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='18' font-weight='bold' fill='%23060a13'>O</text></svg>">
+  <link rel="stylesheet" href="/static/style.css?v=7">
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ===== Top Bar ===== -->
+  <header class="top-bar">
+    <div class="brand">
+      <div class="brand-logo">O</div>
+      <span class="brand-name">OpsVoice</span>
+      <span class="brand-tag">SRE Copilot</span>
+    </div>
+    <a href="/static/opsvoice-video-slides.html" class="btn btn-ghost btn-sm" style="margin-right: 8px; font-size: 11px; text-decoration: none;">Video slides</a>
+    <a href="/static/architecture.html" class="btn btn-ghost btn-sm" style="margin-left: auto; font-size: 11px; text-decoration: none;">Architecture</a>
+    <div class="top-bar-status">
+      <span id="connection-status" class="pill is-idle">Disconnected</span>
+      <span id="audio-status" class="pill">Mic off</span>
+      <span id="camera-status" class="pill">Camera off</span>
+    </div>
+  </header>
+
+  <!-- ===== Left Sidebar — Service Health ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <h2 class="sidebar-title">Service Health</h2>
+      </div>
+      <div id="service-cards" class="sidebar-section-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <p>Connect to load service status</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <h2 class="sidebar-title">Active Incidents</h2>
+      </div>
+      <div id="incident-list" class="sidebar-section-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <p>No active incidents</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Center Content ===== -->
+  <main class="center-content">
+
+    <!-- Landing nav: Architecture & Video slides -->
+    <nav class="landing-nav" aria-label="Explore OpsVoice">
+      <a href="/static/architecture.html" class="landing-nav-link">
+        <span class="landing-nav-icon">&#x1F4CA;</span>
+        Architecture
+      </a>
+      <a href="/static/opsvoice-video-slides.html" class="landing-nav-link">
+        <span class="landing-nav-icon">&#x1F3A5;</span>
+        Video slides
+      </a>
+    </nav>
+
+    <!-- Agent State Indicator -->
+    <div class="agent-state-bar" id="agent-state-bar">
+      <span class="state-icon" id="state-icon">II</span>
+      <span class="state-label" id="state-label">Ready to connect</span>
+      <div class="state-steps">
+        <div class="state-step" id="step-listen"><span class="step-label">Listen</span></div>
+        <div class="state-step" id="step-analyze"><span class="step-label">Analyze</span></div>
+        <div class="state-step" id="step-tool"><span class="step-label">Tool</span></div>
+        <div class="state-step" id="step-speak"><span class="step-label">Speak</span></div>
+      </div>
+    </div>
+
+    <!-- Voice Orb -->
+    <div class="orb-container idle" id="orb-container" title="Click to toggle microphone">
+      <div class="orb" id="voice-orb"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-ring"></div>
+      <span class="orb-label" id="orb-label">Click Connect to begin</span>
+    </div>
+
+    <!-- Audio Waveform -->
+    <div class="waveform-container">
+      <canvas id="waveform-canvas"></canvas>
+    </div>
+
+    <!-- Action Card: Controls + Camera Mode + Text Input -->
+    <div class="action-card">
+
+      <div class="action-card-section">
+        <span class="action-card-label">Connection</span>
+        <div class="controls-row">
+          <button id="connect-btn" type="button" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Connect
+          </button>
+          <button id="disconnect-btn" type="button" class="btn btn-outline btn-outline-danger" disabled>
+            Disconnect
+          </button>
+          <button id="mic-btn" type="button" class="btn btn-outline" title="Toggle microphone">
+            <svg class="mic-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <span class="mic-label">Start voice</span>
+          </button>
+          <button id="camera-btn" type="button" class="btn btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Camera
+          </button>
+        </div>
+      </div>
+
+      <div class="action-card-divider"></div>
+
+      <div class="action-card-section" aria-labelledby="camera-mode-label">
+        <span id="camera-mode-label" class="action-card-label">Camera Mode</span>
+        <div class="camera-mode-group" role="radiogroup" aria-label="Camera mode selection">
+          <button id="camera-mode-type-btn" type="button" class="btn btn-outline btn-sm camera-mode-btn" data-camera-mode="text" role="radio" aria-checked="false">
+            Camera + Type
+          </button>
+          <button id="camera-mode-voice-btn" type="button" class="btn btn-outline btn-sm camera-mode-btn" data-camera-mode="voice" role="radio" aria-checked="true">
+            Camera + Type + Voice
+          </button>
+        </div>
+        <p id="camera-mode-help" class="camera-mode-help">Typed prompts use the live camera frame. Voice prompts also use the camera when the second mode is selected.</p>
+      </div>
+
+      <div class="action-card-divider"></div>
+
+      <div class="action-card-section">
+        <span class="action-card-label">Send a text command</span>
+        <form id="text-form" class="text-form">
+          <div class="input-row">
+            <input id="text-input" name="text" type="text" placeholder="e.g. What is the status of payment-api?" autocomplete="off">
+            <button id="send-btn" type="submit" class="btn btn-primary btn-sm" disabled>Send</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Transcript / Timeline -->
+    <div class="transcript-section panel">
+      <div class="panel-header">
+        <h2>Conversation</h2>
+        <button id="clear-log-btn" type="button" class="btn btn-ghost btn-sm">Clear</button>
+      </div>
+      <div id="transcript" class="transcript">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <p>Start speaking or type a command</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsible Event Log -->
+    <div class="event-log-section">
+      <button class="event-log-toggle" id="event-log-toggle" type="button">
+        <span>Raw Event Log</span>
+        <svg class="arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <pre id="event-log" class="event-log"></pre>
+    </div>
+
+  </main>
+
+  <!-- ===== Right Panel — Camera & Tools ===== -->
+  <aside class="right-panel">
+    <div class="right-panel-section right-section-panel">
+      <div class="right-section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <h3 class="right-section-title">Camera Feed</h3>
+      </div>
+      <video id="camera-preview" autoplay playsinline muted></video>
+      <div class="drop-zone" id="drop-zone">
+        <div class="drop-zone-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+        </div>
+        <p>Drag & drop a screenshot or text log file here</p>
+      </div>
+    </div>
+
+    <div class="right-panel-section right-panel-section--grow right-section-panel">
+      <div class="right-section-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        <h3 class="right-section-title">Tool Executions</h3>
+      </div>
+      <div id="tool-cards" class="tool-cards-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <p>Tool calls will appear here</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="/static/script.js" defer></script>
+</body>
+</html>

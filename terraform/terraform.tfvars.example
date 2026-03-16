@@ -1,0 +1,12 @@
+﻿project_id                 = "replace-with-your-project-id"
+region                     = "us-central1"
+firestore_location         = "nam5"
+app_name                   = "opsvoice"
+image                      = "us-central1-docker.pkg.dev/replace-with-your-project-id/opsvoice/opsvoice:latest"
+gemini_api_key_secret_name = "opsvoice-gemini-api-key"
+gemini_api_key             = ""
+allow_unauthenticated      = true
+min_instances              = 0
+max_instances              = 2
+timeout_seconds            = 3600
+opsvoice_model             = "gemini-2.5-flash-native-audio-preview-12-2025"
