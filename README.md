@@ -1,7 +1,7 @@
 # OpsVoice -- Voice-First SRE Command Center
 
 > **Live App**: [opsvoice-942622207688.us-central1.run.app](https://opsvoice-942622207688.us-central1.run.app/)
-> **Demo Video**: [Watch on YouTube](https://youtu.be/w8ci6UETBpo)
+> **Demo Video**: [Watch on YouTube](https://youtu.be/lmyWZWknFn0)
 > **Architecture**: [Interactive Diagram](https://opsvoice-942622207688.us-central1.run.app/static/architecture.html) | [Presentation Slides](https://opsvoice-942622207688.us-central1.run.app/static/opsvoice-video-slides.html)
 
 ## Overview
